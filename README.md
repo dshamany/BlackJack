@@ -8,3 +8,7 @@ __Instructions__
 5. The player can request another card if the total value of his/her cards is less than 21
 6. The house can only pull another card if the total value of their card is 17 or less
 7. If the player exceeds 21 total points, he/she loses; otherwise, check who has the greater total and declare a winner
+
+---
+
+![App Wireframe](https://i.imgur.com/ULbTvLP.png)
