@@ -47,3 +47,17 @@ body {
     margin: 7px;
     width: 100px;
 }
+
+#btnHold {
+    position: fixed;
+    width: 100px;
+    height: 150px;
+    bottom: 40px;
+    right: 0;
+    margin: 40px;
+    background-color: lightgreen;
+    border: 3px solid black;
+    border-radius: 10px;
+    font-weight: bold;
+    color: black;
+}

@@ -3,10 +3,10 @@ const SUITS = ['spades', 'diamonds', 'clubs', 'hearts'];
 const RANKS = ['A', '02', '03', '04', '05', '06', '07',                      '08', '09', '10', 'J', 'Q', 'K'];
 
 // App State
-let cards = [];
+let deck = [];
 let playerTurn = true;
-let houseCards = [];
-let playerCards = [];
+let houseHand = [];
+let playerHand = [];
 
 // Classes
 class Card {
@@ -40,10 +40,14 @@ class Card {
 }
 
 // Cached Elements
-let houseContainer = document.querySelector('.house-container');
-let playerContainer = document.querySelector('.player-container');
+let houseTable = document.querySelector('.house-container');
+let playerTable = document.querySelector('.player-container');
+let btnHit = document.querySelector('#btnHit');
+let btnHold = document.querySelector('#btnHold');
+
 // Event Listeners
-document.querySelector('#btnHit').addEventListener('click', displayCards);
+btnHit.addEventListener('click', dealCard);
+btnHold.addEventListener('click', hold);
 
 // Functions
 function init(){
@@ -51,59 +55,44 @@ function init(){
     // create a deck
     for (suit of SUITS)
         for (rank of RANKS)
-            cards.push(new Card(suit, rank));
+            deck.push(new Card(suit, rank));
     
-    playerCards = [];
-    houseCards = [];
+
+    // Reset Turn
+    playerTurn = true;
+
+    // Reset Arrays
+    houseHand = [];
+    playerHand = [];
+
+    // Clear Board
+    houseTable.innerHTML  = '';
+    playerTable.innerHTML = '';
+
+    // Setup Table
+    let firstCard = randomCard();
+    firstCard.isFaceUp = false;
+    createCardElement(firstCard, 'h-card', houseTable, houseHand);
+    createCardElement(randomCard(), 'h-card', houseTable, houseHand);
+
+    createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+    createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+
+    calculateHandTotal(houseHand);
+    calculateHandTotal(playerHand);
 }
 
 function randomCard(card){
     let random = Math.floor(Math.random() * 51);
-    return cards[random];
-}
-
-function serveCard(){
-    let card = randomCard();
-
-    // Determine where to push the card
-    if (playerTurn && calculateHandTotal(playerCards) < 21){
-        playerCards.push(card);
-    } else if (!playerTurn && calculateHandTotal(houseCards) <= 17){
-        if (houseCards.length === 0){
-            card.isFaceUp = false;
-            houseCards.push(card);
-        } else if (houseCards.length === 1 || 
-            houseCards[0].isFaceUp){
-            card.isFaceUp = true;
-            houseCards.push(card);
-        } else if (houseCards.length === 2){
-            houseCards[0].isFaceUp = true;
-        }
-    }
-    return card;
+    return deck[random];
 }
 
 function createCardElement(card, className, container, cardArr){
+    cardArr.push(card);
     let cardDiv = document.createElement('div');
     cardDiv.className = className;
     cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
     container.appendChild(cardDiv);
-    console.log(calculateHandTotal(cardArr));
-}
-
-function displayCards(){
-    serveCard();
-    playerContainer.innerHTML = '';
-    playerCards.forEach((card) => {
-        createCardElement(card, 'p-card', playerContainer, playerCards);
-    });
-    houseContainer.innerHTML = '';
-    houseCards.forEach((card) => {
-       createCardElement(card, 'h-card', houseContainer, houseCards);
-    });
-    console.log(calculateHandTotal(houseCards));
-
-    playerTurn = switchTurn();
 }
 
 function cardImgSrc(card){
@@ -115,17 +104,32 @@ function cardImgSrc(card){
 function calculateHandTotal(cardArr){
     let sum = 0;
     cardArr.forEach((card) => {
-        if (card.rank === 'A' && sum < 21)
+        if (card.rank === 'A' && (sum + 11) < 21){
             sum += 11;
-        else {
+        } else {
             sum += card.value();
         }
     });
     return sum;
 }
 
-function switchTurn(){
-    return playerTurn ? false : true;
+function dealCard(){
+    if (playerTurn){
+        createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+    } else if (houseHand[0].isFaceUp){
+        createCardElement(randomCard(), 'h-card', houseTable, houseHand);
+    } else {
+        // Uncover first card before adding cards to house table
+        let firstCard = document.querySelectorAll('.h-card')[0];
+        houseHand[0].isFaceUp = true;
+        firstCard.innerHTML = `<img src="${cardImgSrc(houseHand[0])}">`;
+    }
+}
+
+function hold(){
+    playerTurn = false;
+    btnHold.style.disable = true;
+    btnHold.style.opacity = '0.5';
 }
 
 /* 
@@ -152,3 +156,6 @@ function switchTurn(){
 
 // GAME
 init();
+
+console.log(calculateHandTotal(houseHand));
+console.log(calculateHandTotal(playerHand));
