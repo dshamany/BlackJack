@@ -1,49 +1,37 @@
 // Constants
 const SUITS = ['spades', 'diamonds', 'clubs', 'hearts'];
-const RANKS = ['ace', 'two', 'three', 'four', 'five', 'six', 'seven',                      'eight', 'nine', 'ten', 'jack', 'queen', 'king'];
-let cards = [];
+const RANKS = ['A', '02', '03', '04', '05', '06', '07',                      '08', '09', '10', 'J', 'Q', 'K'];
+
+// App State
+let deck = [];
+let playerTurn = true;
+let houseHand = [];
+let playerHand = [];
 
 // Classes
 class Card {
-    constructor(suit, rank, faceUp = false){
+    constructor(suit, rank, isFaceUp = true){
         this.suit = suit;
         this.rank = rank;
-        this.faceUp = faceUp;
+        this.isFaceUp = isFaceUp;
     }
     value(){
         switch (this.rank){
-            case 'ace':
+            case 'A':
                 return 1;
-            case 'two':
-                return 2;
-            case 'three':
-                return 3;
-            case 'four':
-                return 4;
-            case 'five':
-                return 5;
-            case 'six':
-                return 6;
-            case 'seven':
-                return 7;
-            case 'eight':
-                return 8;
-            case 'nine':
-                return 9;
-            case 'ten':
-            case 'jack':
-            case 'queen':
-            case 'king':
+            case 'J':
+            case 'Q':
+            case 'K':
                 return 10;
             default:
-                return 0;
+                return Number(this.rank);
         }
     }
     flipCard(){
-        if (this.faceUp){
-            this.faceUp = false;
+        if (this.isFaceUp){
+            this.isFaceUp = false;
         } else {
-            this.faceUp = true;
+            this.isFaceUp = true;
         }
     }
     description(){
@@ -52,8 +40,14 @@ class Card {
 }
 
 // Cached Elements
+let houseTable = document.querySelector('.house-container');
+let playerTable = document.querySelector('.player-container');
+let btnHit = document.querySelector('#btnHit');
+let btnHold = document.querySelector('#btnHold');
 
 // Event Listeners
+btnHit.addEventListener('click', dealCard);
+btnHold.addEventListener('click', hold);
 
 // Functions
 function init(){
@@ -61,17 +55,82 @@ function init(){
     // create a deck
     for (suit of SUITS)
         for (rank of RANKS)
-            cards.push(new Card(suit, rank));
+            deck.push(new Card(suit, rank));
+    
+
+    // Reset Turn
+    playerTurn = true;
+
+    // Reset Arrays
+    houseHand = [];
+    playerHand = [];
+
+    // Clear Board
+    houseTable.innerHTML  = '';
+    playerTable.innerHTML = '';
+
+    // Setup Table
+    let firstCard = randomCard();
+    firstCard.isFaceUp = false;
+    createCardElement(firstCard, 'h-card', houseTable, houseHand);
+    createCardElement(randomCard(), 'h-card', houseTable, houseHand);
+
+    createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+    createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+
+    calculateHandTotal(houseHand);
+    calculateHandTotal(playerHand);
 }
 
 function randomCard(card){
     let random = Math.floor(Math.random() * 51);
-    return cards[random];
+    return deck[random];
 }
 
-// GAME
+function createCardElement(card, className, container, cardArr){
+    cardArr.push(card);
+    let cardDiv = document.createElement('div');
+    cardDiv.className = className;
+    cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
+    container.appendChild(cardDiv);
+}
 
-init();
+function cardImgSrc(card){
+    if (card.isFaceUp)
+        return `../images/${card.suit}/${card.suit}-r${card.rank}.svg`;
+    return "../images/backs/blue.svg";
+}
+
+function calculateHandTotal(cardArr){
+    let sum = 0;
+    cardArr.forEach((card) => {
+        if (card.rank === 'A' && (sum + 11) < 21){
+            sum += 11;
+        } else {
+            sum += card.value();
+        }
+    });
+    return sum;
+}
+
+function dealCard(){
+    if (playerTurn){
+        createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+    } else if (houseHand[0].isFaceUp){
+        createCardElement(randomCard(), 'h-card', houseTable, houseHand);
+    } else {
+        // Uncover first card before adding cards to house table
+        let firstCard = document.querySelectorAll('.h-card')[0];
+        houseHand[0].isFaceUp = true;
+        firstCard.innerHTML = `<img src="${cardImgSrc(houseHand[0])}">`;
+    }
+}
+
+function hold(){
+    playerTurn = false;
+    btnHold.style.disable = true;
+    btnHold.style.opacity = '0.5';
+}
 
 /* 
 - Initilize the game by generating a card deck
@@ -95,3 +154,8 @@ init();
 
 */
 
+// GAME
+init();
+
+console.log(calculateHandTotal(houseHand));
+console.log(calculateHandTotal(playerHand));
