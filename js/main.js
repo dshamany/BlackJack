@@ -52,6 +52,9 @@ function init(){
     for (suit of SUITS)
         for (rank of RANKS)
             cards.push(new Card(suit, rank));
+    
+    playerCards = [];
+    houseCards = [];
 }
 
 function randomCard(card){
@@ -59,22 +62,18 @@ function randomCard(card){
     return cards[random];
 }
 
-// GAME
-
-init();
-
 function serveCard(){
     let card = randomCard();
 
     // Determine where to push the card
-    if (playerTurn){
+    if (playerTurn && calculateHandTotal(playerCards) < 21){
         playerCards.push(card);
-    } else {
+    } else if (!playerTurn && calculateHandTotal(houseCards) <= 17){
         if (houseCards.length === 0){
             card.isFaceUp = false;
             houseCards.push(card);
         } else if (houseCards.length === 1 || 
-                   houseCards[0].isFaceUp){
+            houseCards[0].isFaceUp){
             card.isFaceUp = true;
             houseCards.push(card);
         } else if (houseCards.length === 2){
@@ -125,9 +124,6 @@ function calculateHandTotal(cardArr){
     return sum;
 }
 
-// function calculateTurn(turn){
-// }
-
 function switchTurn(){
     return playerTurn ? false : true;
 }
@@ -154,3 +150,5 @@ function switchTurn(){
 
 */
 
+// GAME
+init();
