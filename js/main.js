@@ -1,49 +1,37 @@
 // Constants
 const SUITS = ['spades', 'diamonds', 'clubs', 'hearts'];
-const RANKS = ['ace', 'two', 'three', 'four', 'five', 'six', 'seven',                      'eight', 'nine', 'ten', 'jack', 'queen', 'king'];
+const RANKS = ['A', '02', '03', '04', '05', '06', '07',                      '08', '09', '10', 'J', 'Q', 'K'];
+
+// App State
 let cards = [];
+let playerTurn = true;
+let houseCards = [];
+let playerCards = [];
 
 // Classes
 class Card {
-    constructor(suit, rank, faceUp = false){
+    constructor(suit, rank, isFaceUp = true){
         this.suit = suit;
         this.rank = rank;
-        this.faceUp = faceUp;
+        this.isFaceUp = isFaceUp;
     }
     value(){
         switch (this.rank){
-            case 'ace':
+            case 'A':
                 return 1;
-            case 'two':
-                return 2;
-            case 'three':
-                return 3;
-            case 'four':
-                return 4;
-            case 'five':
-                return 5;
-            case 'six':
-                return 6;
-            case 'seven':
-                return 7;
-            case 'eight':
-                return 8;
-            case 'nine':
-                return 9;
-            case 'ten':
-            case 'jack':
-            case 'queen':
-            case 'king':
+            case 'J':
+            case 'Q':
+            case 'K':
                 return 10;
             default:
-                return 0;
+                return Number(this.rank);
         }
     }
     flipCard(){
-        if (this.faceUp){
-            this.faceUp = false;
+        if (this.isFaceUp){
+            this.isFaceUp = false;
         } else {
-            this.faceUp = true;
+            this.isFaceUp = true;
         }
     }
     description(){
@@ -52,8 +40,10 @@ class Card {
 }
 
 // Cached Elements
-
+let houseContainer = document.querySelector('.house-container');
+let playerContainer = document.querySelector('.player-container');
 // Event Listeners
+document.querySelector('#btnHit').addEventListener('click', displayCards);
 
 // Functions
 function init(){
@@ -72,6 +62,75 @@ function randomCard(card){
 // GAME
 
 init();
+
+function serveCard(){
+    let card = randomCard();
+
+    // Determine where to push the card
+    if (playerTurn){
+        playerCards.push(card);
+    } else {
+        if (houseCards.length === 0){
+            card.isFaceUp = false;
+            houseCards.push(card);
+        } else if (houseCards.length === 1 || 
+                   houseCards[0].isFaceUp){
+            card.isFaceUp = true;
+            houseCards.push(card);
+        } else if (houseCards.length === 2){
+            houseCards[0].isFaceUp = true;
+        }
+    }
+    return card;
+}
+
+function createCardElement(card, className, container, cardArr){
+    let cardDiv = document.createElement('div');
+    cardDiv.className = className;
+    cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
+    container.appendChild(cardDiv);
+    console.log(calculateHandTotal(cardArr));
+}
+
+function displayCards(){
+    serveCard();
+    playerContainer.innerHTML = '';
+    playerCards.forEach((card) => {
+        createCardElement(card, 'p-card', playerContainer, playerCards);
+    });
+    houseContainer.innerHTML = '';
+    houseCards.forEach((card) => {
+       createCardElement(card, 'h-card', houseContainer, houseCards);
+    });
+    console.log(calculateHandTotal(houseCards));
+
+    playerTurn = switchTurn();
+}
+
+function cardImgSrc(card){
+    if (card.isFaceUp)
+        return `../images/${card.suit}/${card.suit}-r${card.rank}.svg`;
+    return "../images/backs/blue.svg";
+}
+
+function calculateHandTotal(cardArr){
+    let sum = 0;
+    cardArr.forEach((card) => {
+        if (card.rank === 'A' && sum < 21)
+            sum += 11;
+        else {
+            sum += card.value();
+        }
+    });
+    return sum;
+}
+
+// function calculateTurn(turn){
+// }
+
+function switchTurn(){
+    return playerTurn ? false : true;
+}
 
 /* 
 - Initilize the game by generating a card deck
