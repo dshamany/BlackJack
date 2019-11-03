@@ -9,6 +9,7 @@ let dealerHand = [];
 let playerHand = [];
 let dealerPoints = 0;
 let playerPoints = 0;
+let gameOver = false;
 
 // Classes
 class Card {
@@ -60,8 +61,11 @@ function init(){
             deck.push(new Card(suit, rank));
     
 
-    // Reset Turn
+    // Reset Game State
     playerTurn = true;
+    btnHold.style.disable = false;
+    btnHold.style.opacity = '1';
+    gameOver = false;
 
     // Reset Arrays
     dealerHand = [];
@@ -90,12 +94,11 @@ function randomCard(card){
 function createCardElement(card, className, container, cardArr){
     cardArr.push(card);
 
-    if (playerTurn && dealerHand.length < 2 && className === 'd-card'){
+    if (dealerHand.length < 2 && className === 'd-card'){
         card.isFaceUp = false;
     } else {
         card.isFaceUp = true;
     }
-
     let cardDiv = document.createElement('div');
     cardDiv.className = className;
     cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
@@ -124,16 +127,25 @@ function calculateHandTotal(cardArr){
     });
 
     aces.forEach((card) => {
-        if ((sum + 11) <= 21)
-            sum += 11
-        sum += card.value();
+        if ((sum + 11) <= 21) {
+            sum += 11;
+        } else {
+            sum++;
+        }
     });
 
     return sum;
 }
 
 function dealCard(){
+    if (gameOver){
+        init();
+        return;
+    }
+
     if (playerTurn){
+        playerPoints = calculateHandTotal(playerHand);
+
         // Deal card to player
         createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
@@ -157,14 +169,13 @@ function hold(){
     btnHold.style.disable = true;
     btnHold.style.opacity = '0.5';
 
-    dealerPlay();
-    winner();
+    if (!gameOver){
+        dealerPlay();
+        winner();
+    }
 }
 
 function dealerPlay(){
-    dealerPoints = calculateHandTotal(dealerHand);
-    playerPoints = calculateHandTotal(playerHand);
-
     if (playerPoints > 21){
         dealCard();
         winner();
@@ -180,25 +191,33 @@ function dealerPlay(){
     }
 }
 
+function setAlert(msg){
+    gameOver = true;
+    alert(msg);
+}
+
 function winner(){
+    let msg = '';
+
     if (playerPoints > 21){
-        console.log('Dealer Wins!');
+        msg = 'Dealer Wins!'
     } else if (dealerPoints > 21 && playerPoints <= 21){
-        console.log('Player Wins!');
+        msg = 'Player Wins!';
     } else if (playerPoints ===  21 && dealerPoints !== 21){
-        console.log('Player Wins!');
+        msg = 'Player Wins!';
     } else if (dealerPoints ===  21 && playerPoints !== 21){
-        console.log('Dealer Wins!');
+        msg = 'Dealer Wins!';
     } else if (dealerPoints > playerPoints){
-        console.log('Dealer Wins!');
+        msg = 'Dealer Wins!'
     } else if (playerPoints > dealerPoints){
-        console.log('Player Wins!');
+        msg = 'Player Wins!';
     } else if (playerPoints === dealerPoints){
-        console.log('Draw!');
+        msg = 'Draw!';
     }
 
-    console.log("Dealer: ", dealerPoints);
-    console.log("Player: ", playerPoints);
+    if (msg != ''){
+        setAlert(msg);
+    }
 }
 
 /* 
