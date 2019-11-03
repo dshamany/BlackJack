@@ -47,7 +47,7 @@ let dealerTable = document.querySelector('.dealer-container');
 let playerTable = document.querySelector('.player-container');
 let btnHit = document.querySelector('#btnHit');
 let btnHold = document.querySelector('#btnHold');
-let mainDisplay = document.querySelector("#message-container");
+// let mainDisplay = document.querySelector("#message-container");
 
 // Event Listeners
 btnHit.addEventListener('click', dealCard);
@@ -68,7 +68,7 @@ function init() {
     btnHold.style.opacity = '1';
     gameOver = false;
 
-    mainDisplay.innerHTML = '';
+    // mainDisplay.innerHTML = '';
 
     // Reset Arrays
     dealerHand = [];
@@ -176,7 +176,7 @@ function dealCard() {
 function hold() {
     playerTurn = false;
     btnHold.style.disable = true;
-    btnHold.style.opacity = '0.5';
+    btnHold.style.opacity = '0.3';
 
     if (!gameOver) {
         dealerPlay();
@@ -232,8 +232,18 @@ function winner() {
 }
 
 function displayPoints(){
-    document.querySelector("#dealer-points").innerHTML = calculateHandTotal(dealerHand);
-    document.querySelector("#player-points").innerHTML = calculateHandTotal(playerHand);
+    let dealerPts = document.createElement('div');
+    dealerPts.className = 'display-pts';
+    dealerPts.id = 'dealer-points';
+    dealerPts.textContent = calculateHandTotal(dealerHand);
+    dealerTable.appendChild(dealerPts);
+
+    let playerPts = document.createElement('div');
+    playerPts.className = 'display-pts';
+    playerPts.id = 'player-points';
+    playerPts.textContent = calculateHandTotal(playerHand);
+    playerTable.appendChild(playerPts);
+
 }
 
 /* 
