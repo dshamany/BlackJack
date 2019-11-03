@@ -1,6 +1,6 @@
 // Constants
 const SUITS = ['spades', 'diamonds', 'clubs', 'hearts'];
-const RANKS = ['A', '02', '03', '04', '05', '06', '07',                      '08', '09', '10', 'J', 'Q', 'K'];
+const RANKS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
 
 // App State
 let deck = [];
@@ -13,13 +13,13 @@ let gameOver = false;
 
 // Classes
 class Card {
-    constructor(suit, rank, isFaceUp = true){
+    constructor(suit, rank, isFaceUp = true) {
         this.suit = suit;
         this.rank = rank;
         this.isFaceUp = isFaceUp;
     }
-    value(){
-        switch (this.rank){
+    value() {
+        switch (this.rank) {
             case 'A':
                 return 1;
             case 'J':
@@ -30,14 +30,14 @@ class Card {
                 return Number(this.rank);
         }
     }
-    flipCard(){
-        if (this.isFaceUp){
+    flipCard() {
+        if (this.isFaceUp) {
             this.isFaceUp = false;
         } else {
             this.isFaceUp = true;
         }
     }
-    description(){
+    description() {
         console.log(this.suit + ': ' + this.rank);
     }
 }
@@ -47,19 +47,20 @@ let dealerTable = document.querySelector('.dealer-container');
 let playerTable = document.querySelector('.player-container');
 let btnHit = document.querySelector('#btnHit');
 let btnHold = document.querySelector('#btnHold');
+let mainDisplay = document.querySelector("#message-container");
 
 // Event Listeners
 btnHit.addEventListener('click', dealCard);
 btnHold.addEventListener('click', hold);
 
 // Functions
-function init(){
+function init() {
 
     // create a deck
     for (suit of SUITS)
         for (rank of RANKS)
             deck.push(new Card(suit, rank));
-    
+
 
     // Reset Game State
     playerTurn = true;
@@ -67,12 +68,14 @@ function init(){
     btnHold.style.opacity = '1';
     gameOver = false;
 
+    mainDisplay.innerHTML = '';
+
     // Reset Arrays
     dealerHand = [];
     playerHand = [];
 
     // Clear Board
-    dealerTable.innerHTML  = '';
+    dealerTable.innerHTML = '';
     playerTable.innerHTML = '';
 
     // Setup Table
@@ -84,17 +87,19 @@ function init(){
 
     calculateHandTotal(dealerHand);
     calculateHandTotal(playerHand);
+
+    displayPoints();
 }
 
-function randomCard(card){
+function randomCard(card) {
     let random = Math.floor(Math.random() * 51);
     return deck[random];
 }
 
-function createCardElement(card, className, container, cardArr){
+function createCardElement(card, className, container, cardArr) {
     cardArr.push(card);
 
-    if (dealerHand.length < 2 && className === 'd-card'){
+    if (dealerHand.length < 2 && className === 'd-card') {
         card.isFaceUp = false;
     } else {
         card.isFaceUp = true;
@@ -108,21 +113,23 @@ function createCardElement(card, className, container, cardArr){
     playerPoints = calculateHandTotal(playerHand);
 }
 
-function cardImgSrc(card){
+function cardImgSrc(card) {
     if (card.isFaceUp)
         return `../images/${card.suit}/${card.suit}-r${card.rank}.svg`;
     return "../images/backs/blue.svg";
 }
 
-function calculateHandTotal(cardArr){
+function calculateHandTotal(cardArr) {
     let sum = 0;
     let aces = [];
 
     cardArr.forEach((card) => {
-        if (card.rank === 'A') {
-            aces.push(card);
-        } else {
-            sum += card.value();
+        if (card.isFaceUp) {
+            if (card.rank === 'A') {
+                aces.push(card);
+            } else {
+                sum += card.value();
+            }
         }
     });
 
@@ -137,23 +144,23 @@ function calculateHandTotal(cardArr){
     return sum;
 }
 
-function dealCard(){
-    if (gameOver){
+function dealCard() {
+    if (gameOver) {
         init();
         return;
     }
 
-    if (playerTurn){
+    if (playerTurn) {
         playerPoints = calculateHandTotal(playerHand);
 
         // Deal card to player
         createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
-        if (playerPoints >= 21){
+        if (playerPoints >= 21) {
             hold();
         }
 
-    } else if (dealerHand[0].isFaceUp){
+    } else if (dealerHand[0].isFaceUp) {
         // Deal card to dealer
         createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     } else {
@@ -162,62 +169,71 @@ function dealCard(){
         dealerHand[0].isFaceUp = true;
         firstCard.innerHTML = `<img src="${cardImgSrc(dealerHand[0])}">`;
     }
+
+    displayPoints();
 }
 
-function hold(){
+function hold() {
     playerTurn = false;
     btnHold.style.disable = true;
     btnHold.style.opacity = '0.5';
 
-    if (!gameOver){
+    if (!gameOver) {
         dealerPlay();
         winner();
     }
 }
 
-function dealerPlay(){
-    if (playerPoints > 21){
-        dealCard();
+function dealerPlay() {
+    dealCard(); // To uncover first card
+    dealerPoints = calculateHandTotal(dealerHand);
+
+    if (playerPoints > 21) {
         winner();
         return;
     }
 
-    while (dealerPoints <= 15){
+    while (dealerPoints <= 13) {
         dealCard();
     }
 
-    if (!dealerHand[0].isFaceUp){
+    if (!dealerHand[0].isFaceUp) {
         dealCard();
     }
 }
 
-function setAlert(msg){
+function setAlert(msg) {
     gameOver = true;
-    alert(msg);
+    document.querySelector("#message-container").innerHTML = msg;
 }
 
-function winner(){
+function winner() {
     let msg = '';
 
-    if (playerPoints > 21){
+    if (playerPoints > 21) {
         msg = 'Dealer Wins!'
-    } else if (dealerPoints > 21 && playerPoints <= 21){
+    } else if (dealerPoints > 21 && playerPoints <= 21) {
         msg = 'Player Wins!';
-    } else if (playerPoints ===  21 && dealerPoints !== 21){
+    } else if (playerPoints === 21 && dealerPoints !== 21) {
         msg = 'Player Wins!';
-    } else if (dealerPoints ===  21 && playerPoints !== 21){
+    } else if (dealerPoints === 21 && playerPoints !== 21) {
         msg = 'Dealer Wins!';
-    } else if (dealerPoints > playerPoints){
+    } else if (dealerPoints > playerPoints) {
         msg = 'Dealer Wins!'
-    } else if (playerPoints > dealerPoints){
+    } else if (playerPoints > dealerPoints) {
         msg = 'Player Wins!';
-    } else if (playerPoints === dealerPoints){
+    } else if (playerPoints === dealerPoints) {
         msg = 'Draw!';
     }
 
-    if (msg != ''){
+    if (msg != '') {
         setAlert(msg);
     }
+}
+
+function displayPoints(){
+    document.querySelector("#dealer-points").innerHTML = calculateHandTotal(dealerHand);
+    document.querySelector("#player-points").innerHTML = calculateHandTotal(playerHand);
 }
 
 /* 

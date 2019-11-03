@@ -31,12 +31,13 @@ body {
 .dealer-container, .player-container {
     display: flex;
     flex-wrap: wrap;
-    width: 70vw;
+    max-width: 65vw;
+    min-width: 40vw;
     height: 40vh;
     margin: 10px 30px;
     border: 5px solid lightgreen;
     border-radius: 10px;
-    padding: 25px;
+    padding: 30px;
 }
 
 .p-card img, .d-card img {
@@ -60,4 +61,38 @@ body {
     border-radius: 10px;
     font-weight: bold;
     color: black;
+}
+
+.display {
+    font-family: monospace;
+    font-size: 18px;
+    margin: 10px;
+    border-radius: 10px;
+    background-color: lightgreen;
+    padding: 30px;
+}
+
+#dealer-points {
+    position: fixed;
+    top: 3px;
+    right: 165px;
+}
+
+#player-points {
+    position: fixed;
+    bottom: 28px;
+    right: 165px;
+}
+
+#message-container{
+    font-family: monospace;
+    font-size: 20px;
+    position: fixed;
+    top: 46%;
+    left: 120px;
+    width: 50vw;
+    height: 50px;
+    background-color: lightgreen;
+    border-radius: 10px;
+    line-height: 250%;
 }
