@@ -5,8 +5,10 @@ const RANKS = ['A', '02', '03', '04', '05', '06', '07',                      '08
 // App State
 let deck = [];
 let playerTurn = true;
-let houseHand = [];
+let dealerHand = [];
 let playerHand = [];
+let dealerPoints = 0;
+let playerPoints = 0;
 
 // Classes
 class Card {
@@ -40,7 +42,7 @@ class Card {
 }
 
 // Cached Elements
-let houseTable = document.querySelector('.house-container');
+let dealerTable = document.querySelector('.dealer-container');
 let playerTable = document.querySelector('.player-container');
 let btnHit = document.querySelector('#btnHit');
 let btnHold = document.querySelector('#btnHold');
@@ -62,23 +64,21 @@ function init(){
     playerTurn = true;
 
     // Reset Arrays
-    houseHand = [];
+    dealerHand = [];
     playerHand = [];
 
     // Clear Board
-    houseTable.innerHTML  = '';
+    dealerTable.innerHTML  = '';
     playerTable.innerHTML = '';
 
     // Setup Table
-    let firstCard = randomCard();
-    firstCard.isFaceUp = false;
-    createCardElement(firstCard, 'h-card', houseTable, houseHand);
-    createCardElement(randomCard(), 'h-card', houseTable, houseHand);
+    createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
+    createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
 
     createCardElement(randomCard(), 'p-card', playerTable, playerHand);
     createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
-    calculateHandTotal(houseHand);
+    calculateHandTotal(dealerHand);
     calculateHandTotal(playerHand);
 }
 
@@ -89,10 +89,20 @@ function randomCard(card){
 
 function createCardElement(card, className, container, cardArr){
     cardArr.push(card);
+
+    if (playerTurn && dealerHand.length < 2 && className === 'd-card'){
+        card.isFaceUp = false;
+    } else {
+        card.isFaceUp = true;
+    }
+
     let cardDiv = document.createElement('div');
     cardDiv.className = className;
     cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
     container.appendChild(cardDiv);
+
+    dealerPoints = calculateHandTotal(dealerHand);
+    playerPoints = calculateHandTotal(playerHand);
 }
 
 function cardImgSrc(card){
@@ -103,26 +113,42 @@ function cardImgSrc(card){
 
 function calculateHandTotal(cardArr){
     let sum = 0;
+    let aces = [];
+
     cardArr.forEach((card) => {
-        if (card.rank === 'A' && (sum + 11) < 21){
-            sum += 11;
+        if (card.rank === 'A') {
+            aces.push(card);
         } else {
             sum += card.value();
         }
     });
+
+    aces.forEach((card) => {
+        if ((sum + 11) < 21)
+            sum += 11
+        sum += card.value();
+    });
+
     return sum;
 }
 
 function dealCard(){
     if (playerTurn){
+        // Deal card to player
         createCardElement(randomCard(), 'p-card', playerTable, playerHand);
-    } else if (houseHand[0].isFaceUp){
-        createCardElement(randomCard(), 'h-card', houseTable, houseHand);
+
+        if (playerPoints >= 21){
+            hold();
+        }
+
+    } else if (dealerHand[0].isFaceUp){
+        // Deal card to dealer
+        createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     } else {
-        // Uncover first card before adding cards to house table
-        let firstCard = document.querySelectorAll('.h-card')[0];
-        houseHand[0].isFaceUp = true;
-        firstCard.innerHTML = `<img src="${cardImgSrc(houseHand[0])}">`;
+        // Uncover first card before adding cards to dealer table
+        let firstCard = document.querySelectorAll('.d-card')[0];
+        dealerHand[0].isFaceUp = true;
+        firstCard.innerHTML = `<img src="${cardImgSrc(dealerHand[0])}">`;
     }
 }
 
@@ -130,26 +156,61 @@ function hold(){
     playerTurn = false;
     btnHold.style.disable = true;
     btnHold.style.opacity = '0.5';
+    dealCard();
+    dealerPlay();
+    winner();
+}
+
+function dealerPlay(){
+    dealerPoints = calculateHandTotal(dealerHand);
+    while (dealerPoints <= 15){
+        dealCard();
+    }
+
+    if (!dealerHand[0].isFaceUp){
+        dealCard();
+    }
+}
+
+function winner(){
+    if (playerPoints > 21){
+        console.log('Dealer Wins!');
+    } else if (dealerPoints > 21 && playerPoints <= 21){
+        console.log('Player Wins!');
+    } else if (playerPoints ===  21 && dealerPoints !== 21){
+        console.log('Player Wins!');
+    } else if (dealerPoints ===  21 && playerPoints !== 21){
+        console.log('Dealer Wins!');
+    } else if (dealerPoints > playerPoints){
+        console.log('Dealer Wins!');
+    } else if (playerPoints > dealerPoints){
+        console.log('Player Wins!');
+    } else if (playerPoints === dealerPoints){
+        console.log('Draw!');
+    }
+
+    console.log("Dealer: ", dealerPoints);
+    console.log("Player: ", playerPoints);
 }
 
 /* 
 - Initilize the game by generating a card deck
 - Generate a random card
-- Push card to house table face down
+- Push card to dealer table face down
 - Generate a second random card
 - Push the card to player table face up
-- Push a third random card to the house table face up
+- Push a third random card to the dealer table face up
 - Push a fourth random card to player table face up
-- Calculate house and player totals separately 
+- Calculate dealer and player totals separately 
 - If player's total value is less than 21,
   player may press 'HIT' to request another radom card
-- If house total is less than or equal to 17, 
-  house table automatically requests another random card
-- If both house and player have equal cards, recalculate totals
+- If dealer total is less than or equal to 17, 
+  dealer table automatically requests another random card
+- If both dealer and player have equal cards, recalculate totals
 - LOGIC:
-    - if player total is under 21, check if house has a larger value (House Wins)
-    - if player total is over 21 (House Wins)
-    - if house exceeds 21 (Player Wins)
+    - if player total is under 21, check if dealer has a larger value (dealer Wins)
+    - if player total is over 21 (dealer Wins)
+    - if dealer exceeds 21 (Player Wins)
     - if both totals are between 17 and 20 (DRAW)
 
 */
@@ -157,5 +218,3 @@ function hold(){
 // GAME
 init();
 
-console.log(calculateHandTotal(houseHand));
-console.log(calculateHandTotal(playerHand));

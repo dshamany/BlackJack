@@ -28,7 +28,7 @@ body {
     width: 100px;
 }
 
-.house-container, .player-container {
+.dealer-container, .player-container {
     display: flex;
     flex-wrap: wrap;
     width: 70vw;
@@ -39,7 +39,7 @@ body {
     padding: 25px;
 }
 
-.p-card img, .h-card img {
+.p-card img, .d-card img {
     display: inline;
     border: 2px solid black;
     border-radius: 10px;
