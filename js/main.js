@@ -124,7 +124,7 @@ function calculateHandTotal(cardArr){
     });
 
     aces.forEach((card) => {
-        if ((sum + 11) < 21)
+        if ((sum + 11) <= 21)
             sum += 11
         sum += card.value();
     });
@@ -156,13 +156,21 @@ function hold(){
     playerTurn = false;
     btnHold.style.disable = true;
     btnHold.style.opacity = '0.5';
-    dealCard();
+
     dealerPlay();
     winner();
 }
 
 function dealerPlay(){
     dealerPoints = calculateHandTotal(dealerHand);
+    playerPoints = calculateHandTotal(playerHand);
+
+    if (playerPoints > 21){
+        dealCard();
+        winner();
+        return;
+    }
+
     while (dealerPoints <= 15){
         dealCard();
     }
