@@ -1,22 +1,28 @@
 // Constants
 const SUITS = ['spades', 'diamonds', 'clubs', 'hearts'];
-const RANKS = ['A', '02', '03', '04', '05', '06', '07',                      '08', '09', '10', 'J', 'Q', 'K'];
+const RANKS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
 
 // App State
 let deck = [];
-let playerTurn = true;
-let houseHand = [];
+let playerTurn = false;
+let dealerHand = [];
 let playerHand = [];
+let dealerPoints = 0;
+let playerPoints = 0;
+let gameOver = false;
+let dealCardAudio = new Audio("../audio/deal-card.wav");
+let flipCardAudio = new Audio("../audio/flip-card.wav");
+
 
 // Classes
 class Card {
-    constructor(suit, rank, isFaceUp = true){
+    constructor(suit, rank, isFaceUp = true) {
         this.suit = suit;
         this.rank = rank;
         this.isFaceUp = isFaceUp;
     }
-    value(){
-        switch (this.rank){
+    value() {
+        switch (this.rank) {
             case 'A':
                 return 1;
             case 'J':
@@ -27,129 +33,233 @@ class Card {
                 return Number(this.rank);
         }
     }
-    flipCard(){
-        if (this.isFaceUp){
-            this.isFaceUp = false;
-        } else {
-            this.isFaceUp = true;
-        }
-    }
-    description(){
-        console.log(this.suit + ': ' + this.rank);
-    }
 }
 
 // Cached Elements
-let houseTable = document.querySelector('.house-container');
+let dealerTable = document.querySelector('.dealer-container');
 let playerTable = document.querySelector('.player-container');
 let btnHit = document.querySelector('#btnHit');
 let btnHold = document.querySelector('#btnHold');
+let mainDisplay = document.querySelector("#message-container");
 
 // Event Listeners
 btnHit.addEventListener('click', dealCard);
 btnHold.addEventListener('click', hold);
 
 // Functions
-function init(){
+function init() {
 
     // create a deck
     for (suit of SUITS)
         for (rank of RANKS)
             deck.push(new Card(suit, rank));
-    
 
-    // Reset Turn
+
+    // Reset Game State
     playerTurn = true;
+    btnHold.style.disable = false;
+    btnHold.style.opacity = '1';
+    gameOver = false;
+
+    mainDisplay.innerHTML = '';
 
     // Reset Arrays
-    houseHand = [];
+    dealerHand = [];
     playerHand = [];
 
     // Clear Board
-    houseTable.innerHTML  = '';
+    dealerTable.innerHTML = '';
     playerTable.innerHTML = '';
 
     // Setup Table
-    let firstCard = randomCard();
-    firstCard.isFaceUp = false;
-    createCardElement(firstCard, 'h-card', houseTable, houseHand);
-    createCardElement(randomCard(), 'h-card', houseTable, houseHand);
-
+    createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+    createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
-    calculateHandTotal(houseHand);
+    calculateHandTotal(dealerHand);
     calculateHandTotal(playerHand);
+
+    displayPoints();
 }
 
-function randomCard(card){
+function randomCard(card) {
     let random = Math.floor(Math.random() * 51);
     return deck[random];
 }
 
-function createCardElement(card, className, container, cardArr){
+function createCardElement(card, className, container, cardArr) {
     cardArr.push(card);
+
+    dealCardAudio.playbackRate = 2.5;
+    dealCardAudio.play();
+
+    if (dealerHand.length < 2 && className === 'd-card') {
+        card.isFaceUp = false;
+    } else {
+        card.isFaceUp = true;
+    }
     let cardDiv = document.createElement('div');
     cardDiv.className = className;
     cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
     container.appendChild(cardDiv);
+
+    dealerPoints = calculateHandTotal(dealerHand);
+    playerPoints = calculateHandTotal(playerHand);
 }
 
-function cardImgSrc(card){
+function cardImgSrc(card) {
     if (card.isFaceUp)
-        return `../images/${card.suit}/${card.suit}-r${card.rank}.svg`;
-    return "../images/backs/blue.svg";
+        return `images/${card.suit}/${card.suit}-r${card.rank}.svg`;
+    return "images/backs/blue.svg";
 }
 
-function calculateHandTotal(cardArr){
+function calculateHandTotal(cardArr) {
     let sum = 0;
+    let aces = [];
+
     cardArr.forEach((card) => {
-        if (card.rank === 'A' && (sum + 11) < 21){
-            sum += 11;
-        } else {
-            sum += card.value();
+        if (card.isFaceUp) {
+            if (card.rank === 'A') {
+                aces.push(card);
+            } else {
+                sum += card.value();
+            }
         }
     });
+
+    aces.forEach((card) => {
+        if ((sum + 11) <= 21) {
+            sum += 11;
+        } else {
+            sum++;
+        }
+    });
+
     return sum;
 }
 
-function dealCard(){
-    if (playerTurn){
+function dealCard() {
+    if (gameOver) {
+        init();
+        return;
+    }
+
+    if (playerTurn) {
+        playerPoints = calculateHandTotal(playerHand);
+        // Deal card to player
         createCardElement(randomCard(), 'p-card', playerTable, playerHand);
-    } else if (houseHand[0].isFaceUp){
-        createCardElement(randomCard(), 'h-card', houseTable, houseHand);
+
+        if (playerPoints >= 21) {
+            hold();
+        }
+
+    } else if (dealerHand[0].isFaceUp) {
+        // Deal card to dealer
+        createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     } else {
-        // Uncover first card before adding cards to house table
-        let firstCard = document.querySelectorAll('.h-card')[0];
-        houseHand[0].isFaceUp = true;
-        firstCard.innerHTML = `<img src="${cardImgSrc(houseHand[0])}">`;
+        flipCardAudio.playbackRate = 2;
+        flipCardAudio.play();
+        // Uncover first card before adding cards to dealer table
+        let firstCard = document.querySelectorAll('.d-card')[0];
+        dealerHand[0].isFaceUp = true;
+        firstCard.innerHTML = `<img src="${cardImgSrc(dealerHand[0])}">`;
+    }
+
+    displayPoints();
+}
+
+function hold() {
+    playerTurn = false;
+    btnHold.style.disable = true;
+    btnHold.style.opacity = '0.3';
+
+    if (!gameOver) {
+        dealerPlay();
     }
 }
 
-function hold(){
-    playerTurn = false;
-    btnHold.style.disable = true;
-    btnHold.style.opacity = '0.5';
+function dealerPlay() {
+    dealCard(); // To uncover first card
+    dealerPoints = calculateHandTotal(dealerHand);
+
+    if (playerPoints > 21) {
+        winner();
+        return;
+    }
+    
+    while (dealerPoints <= 13) {
+        dealCard();
+    }
+
+    if (!dealerHand[0].isFaceUp) {
+        dealCard();
+    }
+
+    winner();
+}
+
+function setAlert(msg) {
+    gameOver = true;
+    document.querySelector("#message-container").innerHTML = msg;
+}
+
+function winner() {
+    let msg = '';
+
+    if (playerPoints > 21) {
+        msg = 'Dealer Wins!'
+    } else if (dealerPoints > 21 && playerPoints <= 21) {
+        msg = 'Player Wins!';
+    } else if (playerPoints === 21 && dealerPoints !== 21) {
+        msg = 'Player Wins!';
+    } else if (dealerPoints === 21 && playerPoints !== 21) {
+        msg = 'Dealer Wins!';
+    } else if (dealerPoints > playerPoints) {
+        msg = 'Dealer Wins!'
+    } else if (playerPoints > dealerPoints) {
+        msg = 'Player Wins!';
+    } else if (playerPoints === dealerPoints) {
+        msg = 'Draw!';
+    }
+
+    if (msg != '') {
+        setAlert(msg);
+    }
+}
+
+function displayPoints(){
+    let dealerPts = document.createElement('div');
+    dealerPts.className = 'display-pts';
+    dealerPts.id = 'dealer-points';
+    dealerPts.textContent = calculateHandTotal(dealerHand);
+    dealerTable.appendChild(dealerPts);
+
+    let playerPts = document.createElement('div');
+    playerPts.className = 'display-pts';
+    playerPts.id = 'player-points';
+    playerPts.textContent = calculateHandTotal(playerHand);
+    playerTable.appendChild(playerPts);
+
 }
 
 /* 
 - Initilize the game by generating a card deck
-- Generate a random card
-- Push card to house table face down
+- Push card to dealer table face down
 - Generate a second random card
 - Push the card to player table face up
-- Push a third random card to the house table face up
+- Push a third random card to the dealer table face up
 - Push a fourth random card to player table face up
-- Calculate house and player totals separately 
+- Calculate dealer and player totals separately 
 - If player's total value is less than 21,
   player may press 'HIT' to request another radom card
-- If house total is less than or equal to 17, 
-  house table automatically requests another random card
-- If both house and player have equal cards, recalculate totals
+- If dealer total is less than or equal to 17, 
+  dealer table automatically requests another random card
+- If both dealer and player have equal cards, recalculate totals
 - LOGIC:
-    - if player total is under 21, check if house has a larger value (House Wins)
-    - if player total is over 21 (House Wins)
-    - if house exceeds 21 (Player Wins)
+    - if player total is under 21, check if dealer has a larger value (dealer Wins)
+    - if player total is over 21 (dealer Wins)
+    - if dealer exceeds 21 (Player Wins)
     - if both totals are between 17 and 20 (DRAW)
 
 */
@@ -157,5 +267,3 @@ function hold(){
 // GAME
 init();
 
-console.log(calculateHandTotal(houseHand));
-console.log(calculateHandTotal(playerHand));
