@@ -4,12 +4,15 @@ const RANKS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', '
 
 // App State
 let deck = [];
-let playerTurn = true;
+let playerTurn = false;
 let dealerHand = [];
 let playerHand = [];
 let dealerPoints = 0;
 let playerPoints = 0;
 let gameOver = false;
+let dealCardAudio = new Audio("../audio/deal-card.wav");
+let flipCardAudio = new Audio("../audio/flip-card.wav");
+
 
 // Classes
 class Card {
@@ -30,16 +33,6 @@ class Card {
                 return Number(this.rank);
         }
     }
-    flipCard() {
-        if (this.isFaceUp) {
-            this.isFaceUp = false;
-        } else {
-            this.isFaceUp = true;
-        }
-    }
-    description() {
-        console.log(this.suit + ': ' + this.rank);
-    }
 }
 
 // Cached Elements
@@ -47,7 +40,7 @@ let dealerTable = document.querySelector('.dealer-container');
 let playerTable = document.querySelector('.player-container');
 let btnHit = document.querySelector('#btnHit');
 let btnHold = document.querySelector('#btnHold');
-// let mainDisplay = document.querySelector("#message-container");
+let mainDisplay = document.querySelector("#message-container");
 
 // Event Listeners
 btnHit.addEventListener('click', dealCard);
@@ -68,7 +61,7 @@ function init() {
     btnHold.style.opacity = '1';
     gameOver = false;
 
-    // mainDisplay.innerHTML = '';
+    mainDisplay.innerHTML = '';
 
     // Reset Arrays
     dealerHand = [];
@@ -80,9 +73,8 @@ function init() {
 
     // Setup Table
     createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
-    createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
-
     createCardElement(randomCard(), 'p-card', playerTable, playerHand);
+    createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
     calculateHandTotal(dealerHand);
@@ -98,6 +90,9 @@ function randomCard(card) {
 
 function createCardElement(card, className, container, cardArr) {
     cardArr.push(card);
+
+    dealCardAudio.playbackRate = 2.5;
+    dealCardAudio.play();
 
     if (dealerHand.length < 2 && className === 'd-card') {
         card.isFaceUp = false;
@@ -115,8 +110,8 @@ function createCardElement(card, className, container, cardArr) {
 
 function cardImgSrc(card) {
     if (card.isFaceUp)
-        return `../images/${card.suit}/${card.suit}-r${card.rank}.svg`;
-    return "../images/backs/blue.svg";
+        return `images/${card.suit}/${card.suit}-r${card.rank}.svg`;
+    return "images/backs/blue.svg";
 }
 
 function calculateHandTotal(cardArr) {
@@ -152,7 +147,6 @@ function dealCard() {
 
     if (playerTurn) {
         playerPoints = calculateHandTotal(playerHand);
-
         // Deal card to player
         createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
@@ -164,6 +158,8 @@ function dealCard() {
         // Deal card to dealer
         createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     } else {
+        flipCardAudio.playbackRate = 2;
+        flipCardAudio.play();
         // Uncover first card before adding cards to dealer table
         let firstCard = document.querySelectorAll('.d-card')[0];
         dealerHand[0].isFaceUp = true;
@@ -180,7 +176,6 @@ function hold() {
 
     if (!gameOver) {
         dealerPlay();
-        winner();
     }
 }
 
@@ -192,7 +187,7 @@ function dealerPlay() {
         winner();
         return;
     }
-
+    
     while (dealerPoints <= 13) {
         dealCard();
     }
@@ -200,6 +195,8 @@ function dealerPlay() {
     if (!dealerHand[0].isFaceUp) {
         dealCard();
     }
+
+    winner();
 }
 
 function setAlert(msg) {
@@ -248,7 +245,6 @@ function displayPoints(){
 
 /* 
 - Initilize the game by generating a card deck
-- Generate a random card
 - Push card to dealer table face down
 - Generate a second random card
 - Push the card to player table face up

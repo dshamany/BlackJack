@@ -3,7 +3,6 @@ body {
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: 1fr 1fr;
-    margin: 0 auto;
 }
 
 aside {
@@ -104,12 +103,13 @@ aside {
     font-family: monospace;
     font-size: 20px;
     position: absolute;
-    top: 0;
-    bottom: 40vh;
-    left: 135px;
-    width: 480px;
-    height: 50px;
+    top: 48vh;
+    left: 22vw;
+    width: 40vw;
+    height: 20px;
     background-color: lightgreen;
     border-radius: 10px;
-    line-height: 250%;
+    line-height: 100%;
+    text-align: center;
+    padding: 10px;
 }
