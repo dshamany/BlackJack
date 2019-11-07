@@ -1,23 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>BlackJack</title>
-    <script defer src="js/main.js"></script>
-    <link rel="stylesheet" href="css/main.css">
+    <title>Black Jack</title>
+    <style>
+        html {
+            text-align: center;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            background-image: url("https://cdn.wallpapersafari.com/27/87/n15MNv.jpg");
+        }
+        body {
+            margin: 15vw auto;
+            background-color: black;
+            color: green;
+            padding-top: 35vh;
+            border: 2px solid white;
+            border-radius: 10px;
+            padding: 40px;
+            width: 50vw;
+            background-color: rgba(0, 0, 0, 0.829);
+        }
+        h1 {
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            text-transform: uppercase;
+            font-size: 46px;
+        }
+        #start-game {
+            background-color: green;
+            border: 2px solid lightgreen;
+            border-radius: 10px;
+            height: 70px;
+            width: 150px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+        }
+        #start-game:hover {
+            background-color: rgb(3, 70, 3);
+        }
+        a{
+            color: white;
+            text-decoration: none;
+        }
+    </style>
 </head>
-
 <body>
-    <section class="dealer-container"></section>
-    <div id="message-container"></div>
-    <section class="player-container"></section>
-    <aside>
-        <div id=btnHit><img src="images/backs/blue.svg"></div>
-        <button id="btnHold">HOLD</button>
-    </aside>
+    <h1>Welcome to BlackJack</h1>
+    <button id="start-game"><a href="main.html" target="_self">Start Game</a></button>
 </body>
-
 </html>
