@@ -1,3 +1,4 @@
+
 // Constants
 const SUITS = ['spades', 'diamonds', 'clubs', 'hearts'];
 const RANKS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
@@ -41,14 +42,15 @@ let playerTable = document.querySelector('.player-container');
 let btnHit = document.querySelector('#btnHit');
 let btnHold = document.querySelector('#btnHold');
 let mainDisplay = document.querySelector("#message-container");
+let startGame = document.querySelector("#start-game");
 
 // Event Listeners
 btnHit.addEventListener('click', dealCard);
 btnHold.addEventListener('click', hold);
+// startGame.addEventListener('click', console.log('Start Game Clicked'));
 
 // Functions
 function init() {
-
     // create a deck
     for (suit of SUITS)
         for (rank of RANKS)
@@ -146,7 +148,6 @@ function dealCard() {
     }
 
     if (playerTurn) {
-        playerPoints = calculateHandTotal(playerHand);
         // Deal card to player
         createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
@@ -166,37 +167,33 @@ function dealCard() {
         firstCard.innerHTML = `<img src="${cardImgSrc(dealerHand[0])}">`;
     }
 
+    playerPoints = calculateHandTotal(playerHand);
+    dealerPoints = calculateHandTotal(dealerHand);
+
     displayPoints();
 }
 
 function hold() {
+    // Change Hold Button Style
     playerTurn = false;
     btnHold.style.disable = true;
     btnHold.style.opacity = '0.3';
 
-    if (!gameOver) {
-        dealerPlay();
-    }
+    dealerPlay();
 }
 
 function dealerPlay() {
     dealCard(); // To uncover first card
-    dealerPoints = calculateHandTotal(dealerHand);
-
-    if (playerPoints > 21) {
+    if (dealerPoints >= 14){
         winner();
         return;
-    }
+    } else {
+        while (dealerPoints < 14) {
+            dealCard();
+        }
     
-    while (dealerPoints <= 13) {
-        dealCard();
+        winner();
     }
-
-    if (!dealerHand[0].isFaceUp) {
-        dealCard();
-    }
-
-    winner();
 }
 
 function setAlert(msg) {
