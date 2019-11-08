@@ -159,8 +159,10 @@ function dealCard() {
         // Deal card to dealer
         createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     } else {
+        // Play Audio
         flipCardAudio.playbackRate = 2;
         flipCardAudio.play();
+
         // Uncover first card before adding cards to dealer table
         let firstCard = document.querySelectorAll('.d-card')[0];
         dealerHand[0].isFaceUp = true;
@@ -225,19 +227,17 @@ function winner() {
     }
 }
 
+function createPointContainer(table, hand, id){
+    let pts = document.createElement('div');
+    pts.className = 'display-pts';
+    pts.id = id;
+    pts.textContent = calculateHandTotal(hand);
+    table.appendChild(pts);
+}
+
 function displayPoints(){
-    let dealerPts = document.createElement('div');
-    dealerPts.className = 'display-pts';
-    dealerPts.id = 'dealer-points';
-    dealerPts.textContent = calculateHandTotal(dealerHand);
-    dealerTable.appendChild(dealerPts);
-
-    let playerPts = document.createElement('div');
-    playerPts.className = 'display-pts';
-    playerPts.id = 'player-points';
-    playerPts.textContent = calculateHandTotal(playerHand);
-    playerTable.appendChild(playerPts);
-
+    createPointContainer(playerTable, playerHand, 'player-points');
+    createPointContainer(dealerTable, dealerHand, 'dealer-points');
 }
 
 /* 
