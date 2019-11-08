@@ -79,9 +79,6 @@ function init() {
     createCardElement(randomCard(), 'd-card', dealerTable, dealerHand);
     createCardElement(randomCard(), 'p-card', playerTable, playerHand);
 
-    calculateHandTotal(dealerHand);
-    calculateHandTotal(playerHand);
-
     displayPoints();
 }
 
@@ -102,11 +99,9 @@ function createCardElement(card, className, container, cardArr) {
     dealCardAudio.playbackRate = 2.5;
     dealCardAudio.play();
 
-    if (dealerHand.length < 2 && className === 'd-card') {
+    if (dealerHand.length < 2 && className === 'd-card')
         card.isFaceUp = false;
-    } else {
-        card.isFaceUp = true;
-    }
+        
     let cardDiv = document.createElement('div');
     cardDiv.className = className;
     cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
