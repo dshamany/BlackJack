@@ -12,3 +12,9 @@ __Instructions__
 ---
 
 ![App Wireframe](https://i.imgur.com/ULbTvLP.png)
+
+---
+
+# Technologies
+
+HTML, CSS, JS

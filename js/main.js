@@ -1,18 +1,18 @@
 
 // Constants
-const SUITS = ['spades', 'diamonds', 'clubs', 'hearts'];
-const RANKS = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
+const SUITS         = ['spades', 'diamonds', 'clubs', 'hearts'];
+const RANKS         = ['A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J', 'Q', 'K'];
 
 // App State
-let deck = [];
-let playerTurn = false;
-let dealerHand = [];
-let playerHand = [];
-let dealerPoints = 0;
-let playerPoints = 0;
-let gameOver = false;
-let dealCardAudio = new Audio("../audio/deal-card.wav");
-let flipCardAudio = new Audio("../audio/flip-card.wav");
+let deck            = [];
+let playerTurn      = false;
+let dealerHand      = [];
+let playerHand      = [];
+let dealerPoints    = 0;
+let playerPoints    = 0;
+let gameOver        = false;
+let dealCardAudio   = new Audio("../audio/deal-card.wav");
+let flipCardAudio   = new Audio("../audio/flip-card.wav");
 
 
 // Classes
@@ -37,17 +37,17 @@ class Card {
 }
 
 // Cached Elements
-let dealerTable = document.querySelector('.dealer-container');
-let playerTable = document.querySelector('.player-container');
-let btnHit = document.querySelector('#btnHit');
-let btnHold = document.querySelector('#btnHold');
-let mainDisplay = document.querySelector("#message-container");
-let startGame = document.querySelector("#start-game");
+let dealerTable     = document.querySelector('.dealer-container');
+let playerTable     = document.querySelector('.player-container');
+let btnHit          = document.querySelector('#btnHit');
+let btnHold         = document.querySelector('#btnHold');
+let mainDisplay     = document.querySelector("#message-container");
+let startGame       = document.querySelector("#start-game");
 
 // Event Listeners
 btnHit.addEventListener('click', dealCard);
 btnHold.addEventListener('click', hold);
-// startGame.addEventListener('click', console.log('Start Game Clicked'));
+
 
 // Functions
 function init() {
@@ -90,6 +90,12 @@ function randomCard(card) {
     return deck[random];
 }
 
+function cardImgSrc(card) {
+    if (card.isFaceUp)
+        return `images/${card.suit}/${card.suit}-r${card.rank}.svg`;
+    return "images/backs/blue.svg";
+}
+
 function createCardElement(card, className, container, cardArr) {
     cardArr.push(card);
 
@@ -108,12 +114,6 @@ function createCardElement(card, className, container, cardArr) {
 
     dealerPoints = calculateHandTotal(dealerHand);
     playerPoints = calculateHandTotal(playerHand);
-}
-
-function cardImgSrc(card) {
-    if (card.isFaceUp)
-        return `images/${card.suit}/${card.suit}-r${card.rank}.svg`;
-    return "images/backs/blue.svg";
 }
 
 function calculateHandTotal(cardArr) {
