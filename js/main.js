@@ -48,7 +48,6 @@ let startGame       = document.querySelector("#start-game");
 btnHit.addEventListener('click', dealCard);
 btnHold.addEventListener('click', hold);
 
-
 // Functions
 function init() {
     // create a deck
@@ -182,7 +181,9 @@ function hold() {
 }
 
 function dealerPlay() {
+
     dealCard(); // To uncover first card
+
     if (dealerPoints >= 14){
         winner();
         return;
