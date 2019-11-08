@@ -101,7 +101,9 @@ function createCardElement(card, className, container, cardArr) {
 
     if (dealerHand.length < 2 && className === 'd-card')
         card.isFaceUp = false;
-        
+    else
+        card.isFaceUp = true;
+
     let cardDiv = document.createElement('div');
     cardDiv.className = className;
     cardDiv.innerHTML = `<img src="${cardImgSrc(card)}">`;
