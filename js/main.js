@@ -14,7 +14,6 @@ let gameOver        = false;
 let dealCardAudio   = new Audio("../audio/deal-card.wav");
 let flipCardAudio   = new Audio("../audio/flip-card.wav");
 
-
 // Classes
 class Card {
     constructor(suit, rank, isFaceUp = true) {
